@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.name }}</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .item-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .item-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            color: #27ae60;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #buy-button {
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #buy-button:hover {
+            background-color: #2980b9;
+        }
+
+        .message {
+            color: #e74c3c;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="item-container">
+    <h1>{{ item.name }}</h1>
+
+    <!-- Изображение товара (если есть) -->
+    {% if item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+    {% endif %}
+
+    <p>{{ item.description }}</p>
+
+    <p class="price">Price: ${{ item.price | floatformat:2 }}</p>
+
+    <!-- Кнопка для покупки -->
+    <button id="buy-button">Buy</button>
+
+    <!-- Сообщение об ошибке или успехе -->
+    <p class="message" id="error-message" style="display: none;"></p>
+
+    <!-- Ссылка для возврата назад -->
+    <a class="back-link" href="{% url 'home' %}">Back to items</a>
+</div>
+
+<script type="text/javascript">
+    var stripe = Stripe("{{ stripe_public_key }}");  // Передаем публичный ключ через Django
+
+    document.getElementById('buy-button').addEventListener('click', function() {
+        // Показать ошибку, если сессия не была создана
+        document.getElementById('error-message').style.display = 'none';
+
+        fetch('/buy/{{ item.id }}/', { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                return stripe.redirectToCheckout({ sessionId: data.id });
+            } else {
+                // Вывести сообщение об ошибке
+                document.getElementById('error-message').textContent = "Ошибка при создании сессии!";
+                document.getElementById('error-message').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при обработке запроса:', error);
+            document.getElementById('error-message').textContent = "Произошла ошибка. Пожалуйста, попробуйте позже.";
+            document.getElementById('error-message').style.display = 'block';
+        });
+    });
+</script>
+
+</body>
+</html>
