@@ -70,7 +70,6 @@ python manage.py runserver
 | `GET` | `/`                           | Главная страница со списком товаров |
 | `GET` | `/item/{id}/`                 | Страница товара с кнопкой оплаты    |
 | `GET` | `/buy/{id}/`                  | Создание Stripe Checkout сессии     |
-| `GET` | `/order/{order_id}/checkout/` | Оплата заказа через Stripe          |
 | `GET` | `/success/`                   | Страница успешной оплаты            |
 | `GET` | `/cancel/`                    | Страница отмены оплаты              |
 
